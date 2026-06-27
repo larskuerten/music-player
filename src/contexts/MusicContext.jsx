@@ -1,8 +1,8 @@
-import { createContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-export const MusicContext = createContext();
+const MusicContext = createContext();
 
-const songs = [
+const ALL_SONGS = [
   {
     id: 1,
     title: "Breaching",
@@ -62,13 +62,31 @@ const songs = [
 ];
 
 export const MusicProvider = ({ children }) => {
-  const [allSongs, setAllSongs] = useState(songs);
-  const [currentTrack, setCurrentTrack] = useState(songs[0]);
+  // const [allSongs, setAllSongs] = useState(songs);
+  // const allSongs = songs;
+  const [currentTrack, setCurrentTrack] = useState(ALL_SONGS[0]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
+  const [playlists, setPlaylists] = useState([]);
+
+  useEffect(() => {
+    const savedPlaylists = localStorage.getItem("musicPlayerPlaylists");
+    if (savedPlaylists) {
+      const playlists = JSON.parse(savedPlaylists);
+      setPlaylists(playlists);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (playlists.length > 0) {
+      localStorage.setItem("musicPlayerPlaylists", JSON.stringify(playlists));
+    } else {
+      localStorage.removeItem("musicPlayerPlaylists");
+    }
+  }, [playlists]);
 
   const handlePlaySong = (song, index) => {
     setCurrentTrack(song);
@@ -78,16 +96,16 @@ export const MusicProvider = ({ children }) => {
 
   const nextTrack = () => {
     setCurrentTrackIndex((prev) => {
-      const nextIndex = (prev + 1) % allSongs.length;
-      setCurrentTrack(allSongs[nextIndex]);
+      const nextIndex = (prev + 1) % ALL_SONGS.length;
+      setCurrentTrack(ALL_SONGS[nextIndex]);
       return nextIndex;
     });
     setIsPlaying(false);
   };
   const prevTrack = () => {
     setCurrentTrackIndex((prev) => {
-      const nextIndex = prev === 0 ? allSongs.length - 1 : prev - 1;
-      setCurrentTrack(allSongs[nextIndex]);
+      const nextIndex = prev === 0 ? ALL_SONGS.length - 1 : prev - 1;
+      setCurrentTrack(ALL_SONGS[nextIndex]);
       return nextIndex;
     });
     setIsPlaying(false);
@@ -102,18 +120,45 @@ export const MusicProvider = ({ children }) => {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const createPlaylist = (name) => {
+    const newPlaylist = {
+      id: Date.now(),
+      name,
+      songs: [],
+    };
+
+    setPlaylists((prev) => [...prev, newPlaylist]);
+  };
+
+  const deletePlaylist = (playlistId) => {
+    setPlaylists((prev) =>
+      prev.filter((playlist) => playlist.id !== playlistId),
+    );
+  };
+
+  const addSongToPlaylist = (playlistId, song) => {
+    setPlaylists((prev) =>
+      prev.map((playlist) => {
+        if (playlist.id === playlistId) {
+          return { ...playlist, songs: [...playlist.songs, song] };
+        } else {
+          return playlist;
+        }
+      }),
+    );
+  };
+
   const play = () => setIsPlaying(true);
   const pause = () => setIsPlaying(false);
   return (
     <MusicContext.Provider
       value={{
-        allSongs,
-        handlePlaySong,
+        ALL_SONGS,
         currentTrackIndex,
         currentTrack,
+        setCurrentTrack,
         currentTime,
         setCurrentTime,
-        currentTime,
         formatTime,
         duration,
         setDuration,
@@ -122,11 +167,24 @@ export const MusicProvider = ({ children }) => {
         play,
         pause,
         isPlaying,
+        handlePlaySong,
         volume,
         setVolume,
+        createPlaylist,
+        playlists,
+        addSongToPlaylist,
+        deletePlaylist,
       }}
     >
       {children}
     </MusicContext.Provider>
   );
+};
+
+export const useMusic = () => {
+  const contextValue = useContext(MusicContext);
+  if (!contextValue) {
+    throw new Error("useMusic must be used inside of Musicprovider");
+  }
+  return contextValue;
 };

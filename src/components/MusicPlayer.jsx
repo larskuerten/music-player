@@ -1,6 +1,5 @@
-import { useContext, useEffect, useRef } from "react";
-import { useMusic } from "../hooks/useMusic";
-import { MusicContext } from "../contexts/MusicContext";
+import { useEffect, useRef } from "react";
+import { useMusic } from "../contexts/MusicContext";
 
 export const MusicPlayer = () => {
   const {
@@ -17,7 +16,7 @@ export const MusicPlayer = () => {
     isPlaying,
     volume,
     setVolume,
-  } = useContext(MusicContext);
+  } = useMusic();
   const audioRef = useRef(null);
 
   const handleTimeChange = (e) => {
@@ -77,7 +76,7 @@ export const MusicPlayer = () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [setDuration, setCurrentTime, currentTrack]);
+  }, [setDuration, setCurrentTime, currentTrack, nextTrack]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -85,7 +84,7 @@ export const MusicPlayer = () => {
     audio.load();
     setCurrentTime(0);
     setDuration(0);
-  }, [currentTrack, setCurrentTime, setDuration, nextTrack]);
+  }, [currentTrack, setCurrentTime, setDuration]);
 
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -135,7 +134,7 @@ export const MusicPlayer = () => {
           type="range"
           min="0"
           max="1"
-          step="0.1"
+          step="0.05"
           className="volume-bar"
           onChange={handleVolumeChange}
           value={volume}

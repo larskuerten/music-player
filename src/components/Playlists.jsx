@@ -13,7 +13,6 @@ export const Playlists = () => {
     ALL_SONGS,
     addSongToPlaylist,
     currentTrackIndex,
-    setCurrentTrack,
     handlePlaySong,
     deletePlaylist,
   } = useMusic();

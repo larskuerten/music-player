@@ -3,7 +3,7 @@ import { MusicPlayer } from "./components/MusicPlayer";
 import Navbar from "./components/Navbar";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { Playlists } from "./components/Playlists";
-import { MusicProvider } from "./contexts/MusicContext";
+import { MusicProvider } from "./contexts/MusicProvider";
 
 function App() {
   return (

@@ -1,6 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
-
-const MusicContext = createContext();
+import { useEffect, useState } from "react";
+import { MusicContext } from "./MusicContext";
 
 const ALL_SONGS = [
   {
@@ -62,23 +61,23 @@ const ALL_SONGS = [
 ];
 
 export const MusicProvider = ({ children }) => {
-  // const [allSongs, setAllSongs] = useState(songs);
-  // const allSongs = songs;
   const [currentTrack, setCurrentTrack] = useState(ALL_SONGS[0]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
-  const [playlists, setPlaylists] = useState([]);
-
-  useEffect(() => {
+  const [playlists, setPlaylists] = useState(() => {
     const savedPlaylists = localStorage.getItem("musicPlayerPlaylists");
     if (savedPlaylists) {
-      const playlists = JSON.parse(savedPlaylists);
-      setPlaylists(playlists);
+      try {
+        return JSON.parse(savedPlaylists);
+      } catch (e) {
+        console.error("Error parsing playlists", e);
+      }
     }
-  }, []);
+    return [];
+  });
 
   useEffect(() => {
     if (playlists.length > 0) {
@@ -179,12 +178,4 @@ export const MusicProvider = ({ children }) => {
       {children}
     </MusicContext.Provider>
   );
-};
-
-export const useMusic = () => {
-  const contextValue = useContext(MusicContext);
-  if (!contextValue) {
-    throw new Error("useMusic must be used inside of Musicprovider");
-  }
-  return contextValue;
 };

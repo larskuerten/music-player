@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # Folders to be deleted
---*/
+--*
